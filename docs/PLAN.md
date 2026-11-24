@@ -143,7 +143,7 @@ Rules:
 
 ## 9. Milestones
 
-- [ ] **M0: Skeleton.** Spring Boot app, `/actuator/health`, README, Maven wrapper, GitHub Actions CI running tests.
+- [x] **M0: Skeleton.** Spring Boot app, `/actuator/health`, README, Maven wrapper, GitHub Actions CI running tests.
 - [ ] **M1: Data model.** Flyway migrations for merchant, location, item, batch and waste_entry; JPA entities and repositories; tests on Testcontainers Postgres.
 - [ ] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
 - [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).

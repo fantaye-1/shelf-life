@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: shelf-life-api
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      # Don't reveal component details to anonymous callers.
+      show-details: never

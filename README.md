@@ -6,6 +6,18 @@ Square doesn't track expiry dates, so stores lose money on products that expire 
 
 > Status: **planning / early development.** See [docs/PLAN.md](docs/PLAN.md) for the product plan, architecture and milestones.
 
+## Build and run
+
+You need **Java 17** or newer. Maven is downloaded automatically by the Maven wrapper.
+
+```sh
+./mvnw verify            # build and run the tests (Windows: mvnw.cmd verify)
+./mvnw spring-boot:run   # start the API on http://localhost:8080
+curl localhost:8080/actuator/health   # {"status":"UP"}
+```
+
+Set `PORT` to use a different port.
+
 ## Planned stack
 
 Java 17 · Spring Boot 3 · PostgreSQL + Flyway · Angular · Docker · GitHub Actions · Square API
