@@ -1,0 +1,26 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.properties
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config and secrets
+.env
+*.env.local
+application-local.yml
+
+# Logs
+*.log
+logs/
