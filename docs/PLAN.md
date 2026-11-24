@@ -102,6 +102,7 @@ erDiagram
   }
   BATCH {
     uuid id
+    uuid merchant_id
     uuid item_id
     uuid location_id
     date expires_on
@@ -112,9 +113,10 @@ erDiagram
   }
   WASTE_ENTRY {
     uuid id
+    uuid merchant_id
     uuid batch_id
     int quantity
-    int loss_cents
+    bigint loss_cents
     timestamp recorded_at
   }
 ```
@@ -122,7 +124,8 @@ erDiagram
 Rules:
 - **Money is stored as integer cents**, never floating point.
 - **Dates are stored in the location's time zone**, so "expires today" matches the store's own day.
-- **Every query is scoped by `merchant_id`**, so one store can never see another's data.
+- **Every query is scoped by `merchant_id`**, so one store can never see another's data. Batches and waste entries carry `merchant_id` too, and composite foreign keys stop a batch from pointing at another store's item or location.
+- A waste entry with no unit cost has an **unknown** loss (`NULL`), not a zero loss.
 
 ## 7. Square integration
 
@@ -144,9 +147,9 @@ Rules:
 ## 9. Milestones
 
 - [x] **M0: Skeleton.** Spring Boot app, `/actuator/health`, README, Maven wrapper, GitHub Actions CI running tests.
-- [ ] **M1: Data model.** Flyway migrations for merchant, location, item, batch and waste_entry; JPA entities and repositories; tests on Testcontainers Postgres.
+- [x] **M1: Data model.** Flyway migrations for merchant, location, item, batch and waste_entry; JPA entities and repositories; tests on Testcontainers Postgres.
   - [x] Slice 1: merchant, location and item tables (V1), entities, merchant-scoped repositories, barcode (GTIN) check-digit validation, store-time-zone "today", Testcontainers tests.
-  - [ ] Slice 2: batch and waste_entry tables, entities and repositories, integer-cents money, status rules.
+  - [x] Slice 2: batch and waste_entry tables (V2), entities and merchant-scoped repositories, integer-cents money, status rules (active → marked down → sold out / wasted), tenant-safe composite foreign keys, optimistic locking on batches.
 - [ ] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
 - [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
 - [ ] **M4: Web app.** Angular screens for batch entry (phone-friendly), the expiring list, actions, and the waste report.
