@@ -8,7 +8,17 @@ Square doesn't track expiry dates, so stores lose money on products that expire 
 
 ## Build and run
 
-You need **Java 17** or newer. Maven is downloaded automatically by the Maven wrapper.
+You need **Java 17** or newer and **Docker** (the tests start a throwaway PostgreSQL with Testcontainers). Maven is downloaded automatically by the Maven wrapper.
+
+To run the API you also need a PostgreSQL database. Until docker-compose lands (M5), start one with:
+
+```sh
+docker run -d --name shelflife-db -p 5432:5432 \
+  -e POSTGRES_DB=shelflife -e POSTGRES_USER=shelflife -e POSTGRES_PASSWORD=change-me postgres:16-alpine
+export DATABASE_PASSWORD=change-me   # see .env.example for all settings
+```
+
+Flyway creates the tables on startup.
 
 ```sh
 ./mvnw verify            # build and run the tests (Windows: mvnw.cmd verify)
