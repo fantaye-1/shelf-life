@@ -1,5 +1,6 @@
 package com.shelflife.inventory;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,8 @@ public interface BatchRepository extends Repository<Batch, UUID> {
     /** Batches at one store in the given statuses, soonest expiry first. */
     List<Batch> findAllByMerchantIdAndLocationIdAndStatusInOrderByExpiresOnAsc(
             UUID merchantId, UUID locationId, Collection<BatchStatus> statuses);
+
+    /** Batches at one store in the given statuses expiring on or before a date, soonest expiry first. */
+    List<Batch> findAllByMerchantIdAndLocationIdAndStatusInAndExpiresOnLessThanEqualOrderByExpiresOnAsc(
+            UUID merchantId, UUID locationId, Collection<BatchStatus> statuses, LocalDate lastDay);
 }
