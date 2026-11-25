@@ -1,5 +1,6 @@
 package com.shelflife.catalog;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,4 +22,7 @@ public interface ItemRepository extends Repository<Item, UUID> {
     List<Item> findAllByMerchantIdAndGtin(UUID merchantId, String gtin);
 
     List<Item> findAllByMerchantIdOrderByNameAsc(UUID merchantId);
+
+    /** Several items at once, e.g. to show names on a list of batches. */
+    List<Item> findAllByMerchantIdAndIdIn(UUID merchantId, Collection<UUID> ids);
 }
