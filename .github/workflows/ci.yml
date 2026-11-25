@@ -20,6 +20,28 @@ jobs:
       - name: Build and test
         run: ./mvnw -B verify
 
+  web:
+    # Angular web app: unit tests in headless Chrome, then a production build.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      NG_CLI_ANALYTICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Unit tests
+        run: npm run test:ci
+      - name: Production build
+        run: npm run build
+      - name: Print lockfile (temporary)
+        run: gzip -9c package-lock.json | base64 -w0; echo
+
   wrapper-windows:
     # Only checks that mvnw.cmd can fetch and start Maven on Windows.
     runs-on: windows-latest

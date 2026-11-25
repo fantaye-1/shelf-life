@@ -1,0 +1,15 @@
+.filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.summary { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px; }
+.summary div { display: flex; flex-direction: column; }
+.big { font-size: 1.6rem; font-weight: 600; }
+.muted { color: var(--muted); font-size: 0.85rem; }
+.group h2 { font-size: 1.05rem; margin: 20px 0 8px; display: flex; align-items: center; gap: 8px; }
+.count { background: var(--chip); border-radius: 999px; padding: 0 8px; font-size: 0.85rem; }
+.group.expired h2 { color: var(--danger); }
+.group.today h2 { color: var(--warn); }
+ul { list-style: none; margin: 0; padding: 0; }
+li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--card); }
+.name { font-weight: 600; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+.tag { font-weight: 400; font-size: 0.75rem; background: var(--chip); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
