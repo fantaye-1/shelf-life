@@ -150,11 +150,11 @@ Rules:
 - [x] **M1: Data model.** Flyway migrations for merchant, location, item, batch and waste_entry; JPA entities and repositories; tests on Testcontainers Postgres.
   - [x] Slice 1: merchant, location and item tables (V1), entities, merchant-scoped repositories, barcode (GTIN) check-digit validation, store-time-zone "today", Testcontainers tests.
   - [x] Slice 2: batch and waste_entry tables (V2), entities and merchant-scoped repositories, integer-cents money, status rules (active → marked down → sold out / wasted), tenant-safe composite foreign keys, optimistic locking on batches.
-- [ ] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
+- [x] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
   - [x] Slice 1: items API (`/api/items`: create, list, find by barcode, get, replace), bean validation, problem+json errors, caller's merchant from a temporary `X-Merchant-Id` header (replaced by login in M8), tenant-isolation tests.
   - [x] Slice 2: locations API (`/api/locations`: create, list, get, replace), IANA time-zone validation, Square link kept on edits, tenant-isolation tests.
   - [x] Slice 3: batches API (`/api/batches`: log a batch, list per location by status, record sales, mark down, sold out, fix the expiry date), expiry judged by the store's own day via one app `Clock`, tenant-isolation tests.
-  - [ ] Slice 4: waste API (record waste with dollar loss).
+  - [x] Slice 4: waste API (`POST /api/batches/{id}/waste` records thrown-away units with the dollar loss and closes an emptied batch as wasted; `GET /api/batches/{id}/waste`; `GET /api/waste?from&to` lists a time window with the known dollar total and a count of entries with unknown cost), tenant-isolation tests.
 - [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
 - [ ] **M4: Web app.** Angular screens for batch entry (phone-friendly), the expiring list, actions, and the waste report.
 - [ ] **M5: Local run.** Dockerfiles and docker-compose (api + db + web); one command to start everything.

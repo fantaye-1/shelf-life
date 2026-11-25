@@ -49,6 +49,9 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `POST` | `/api/batches/{id}/mark-down` | Marked down for a quick sale |
 | `POST` | `/api/batches/{id}/sold-out` | Shelf found empty: the rest counts as sold |
 | `PUT` | `/api/batches/{id}/expires-on` | Fix a mistyped date: `{"expiresOn": "2026-12-01"}` |
+| `POST` | `/api/batches/{id}/waste` | Units thrown away: `{"quantity": 2}`; records the loss in cents (null if the batch has no unit cost); wasting the last unit closes it as wasted |
+| `GET` | `/api/batches/{id}/waste` | Waste records of one batch |
+| `GET` | `/api/waste?from=<instant>&to=<instant>` | Waste in a time window (`to` exclusive, e.g. `2026-11-01T04:00:00Z`), with `knownLossCents` and `entriesWithUnknownLoss` |
 
 ## Planned stack
 
