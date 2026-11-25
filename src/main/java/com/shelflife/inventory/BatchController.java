@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,16 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Batches API: log a delivery with its expiry date, then act on it from the shelf. Actions are
  * separate endpoints (not a free-form PUT) so the status rules in {@link Batch} can't be skipped.
- * There is no delete: batch history feeds the waste report. Waste is recorded in a later slice.
+ * There is no delete: batch history feeds the waste report.
  */
 @RestController
 @RequestMapping("/api/batches")
 public class BatchController {
 
     private final BatchService service;
+    private final WasteService waste;
 
-    public BatchController(BatchService service) {
+    public BatchController(BatchService service, WasteService waste) {
         this.service = service;
+        this.waste = waste;
     }
 
     /** Batches at one store, soonest expiry first. Repeat {@code status} to filter; default is open batches. */
@@ -69,5 +72,18 @@ public class BatchController {
     public BatchResponse correctExpiry(@CurrentMerchant UUID merchantId, @PathVariable UUID id,
             @Valid @RequestBody ExpiryRequest request) {
         return service.correctExpiry(merchantId, id, request.expiresOn());
+    }
+
+    /** Throws units away. Records the dollar loss; wasting the last unit closes the batch as wasted. */
+    @PostMapping("/{id}/waste")
+    public ResponseEntity<WasteRecordedResponse> recordWaste(@CurrentMerchant UUID merchantId,
+            @PathVariable UUID id, @Valid @RequestBody QuantityRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(waste.record(merchantId, id, request.quantity()));
+    }
+
+    /** Waste records of one batch, oldest first. */
+    @GetMapping("/{id}/waste")
+    public List<WasteResponse> listWaste(@CurrentMerchant UUID merchantId, @PathVariable UUID id) {
+        return waste.listForBatch(merchantId, id);
     }
 }
