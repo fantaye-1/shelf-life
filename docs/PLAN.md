@@ -151,6 +151,10 @@ Rules:
   - [x] Slice 1: merchant, location and item tables (V1), entities, merchant-scoped repositories, barcode (GTIN) check-digit validation, store-time-zone "today", Testcontainers tests.
   - [x] Slice 2: batch and waste_entry tables (V2), entities and merchant-scoped repositories, integer-cents money, status rules (active → marked down → sold out / wasted), tenant-safe composite foreign keys, optimistic locking on batches.
 - [ ] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
+  - [x] Slice 1: items API (`/api/items`: create, list, find by barcode, get, replace), bean validation, problem+json errors, caller's merchant from a temporary `X-Merchant-Id` header (replaced by login in M8), tenant-isolation tests.
+  - [ ] Slice 2: locations API.
+  - [ ] Slice 3: batches API (log a batch, mark down, sell, list per location).
+  - [ ] Slice 4: waste API (record waste with dollar loss).
 - [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
 - [ ] **M4: Web app.** Angular screens for batch entry (phone-friendly), the expiring list, actions, and the waste report.
 - [ ] **M5: Local run.** Dockerfiles and docker-compose (api + db + web); one command to start everything.

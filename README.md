@@ -28,6 +28,17 @@ curl localhost:8080/actuator/health   # {"status":"UP"}
 
 Set `PORT` to use a different port.
 
+### API (early)
+
+Until app login lands (milestone M8), each request names its store with an `X-Merchant-Id` header. **Don't expose the API publicly before M8.** Errors come back as `application/problem+json`.
+
+| Method | Path | What |
+|---|---|---|
+| `GET` | `/api/items` | All items by name; `?gtin=<barcode>` finds by barcode |
+| `GET` | `/api/items/{id}` | One item |
+| `POST` | `/api/items` | Create: `{"name": "...", "sku": "...", "gtin": "..."}` |
+| `PUT` | `/api/items/{id}` | Replace name, SKU and barcode (blank clears) |
+
 ## Planned stack
 
 Java 17 · Spring Boot 3 · PostgreSQL + Flyway · Angular · Docker · GitHub Actions · Square API
