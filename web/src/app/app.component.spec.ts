@@ -14,6 +14,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('Expiring');
+    expect(text).toContain('Log batch');
     expect(text).toContain('Settings');
   });
 });

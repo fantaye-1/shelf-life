@@ -9,6 +9,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       <a class="brand" routerLink="/">ShelfLife</a>
       <nav>
         <a routerLink="/expiring" routerLinkActive="active">Expiring</a>
+        <a routerLink="/batches/new" routerLinkActive="active">Log batch</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
     </header>
