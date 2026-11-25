@@ -28,6 +28,20 @@ curl localhost:8080/actuator/health   # {"status":"UP"}
 
 Set `PORT` to use a different port.
 
+### Web app (early)
+
+The Angular app lives in [`web/`](web). You need **Node.js 22**. With the API running on port 8080:
+
+```sh
+cd web
+npm install
+npm start        # http://localhost:4200, /api calls are proxied to localhost:8080
+npm test         # unit tests in Chrome (CI runs them headless)
+npm run build    # production build in web/dist/
+```
+
+Open **Settings** and paste your store's merchant id once; the browser keeps it and sends it as `X-Merchant-Id` until sign-in arrives (M8). The first screen is **Expiring soon**.
+
 ### API (early)
 
 Until app login lands (milestone M8), each request names its store with an `X-Merchant-Id` header. **Don't expose the API publicly before M8.** Errors come back as `application/problem+json`.
@@ -60,7 +74,7 @@ Each store with a `digestEmail` gets one plain-text email per day once its own l
 
 ## Planned stack
 
-Java 17 · Spring Boot 3 · PostgreSQL + Flyway · Angular · Docker · GitHub Actions · Square API
+Java 17 · Spring Boot 3 · PostgreSQL + Flyway · Angular 19 · Docker · GitHub Actions · Square API
 
 ## Author
 

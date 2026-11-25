@@ -1,0 +1,86 @@
+<h1>Expiring soon</h1>
+
+@if (!merchant.merchantId()) {
+  <p class="notice">
+    This browser doesn't know which store it works for yet.
+    Add your store id on the <a routerLink="/settings">Settings</a> screen.
+  </p>
+} @else {
+  <div class="filters">
+    @if (locations().length > 1) {
+      <label>
+        Store
+        <select #loc (change)="selectLocation(loc.value)">
+          @for (l of locations(); track l.id) {
+            <option [value]="l.id" [selected]="l.id === locationId()">{{ l.name }}</option>
+          }
+        </select>
+      </label>
+    }
+    <label>
+      Look ahead
+      <select #days (change)="setWithinDays(days.value)">
+        @for (d of lookAheadOptions; track d) {
+          <option [value]="d" [selected]="d === withinDays()">{{ d }} days</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  @if (locationsLoaded() && locations().length === 0) {
+    <p class="notice">No store locations yet. Add one through the API (screens for this come later).</p>
+  }
+
+  @if (loading() && !report()) {
+    <p>Loading…</p>
+  }
+
+  @if (report(); as r) {
+    <section class="summary" aria-label="Summary">
+      <div>
+        <span class="big">{{ r.batches.length }}</span>
+        <span>{{ r.batches.length === 1 ? 'batch' : 'batches' }} at {{ r.locationName }}</span>
+      </div>
+      <div>
+        <span class="big">{{ r.knownValueAtRiskCents | cents }}</span>
+        <span>at risk</span>
+        @if (r.batchesWithUnknownCost > 0) {
+          <span class="muted">
+            + {{ r.batchesWithUnknownCost }} {{ r.batchesWithUnknownCost === 1 ? 'batch' : 'batches' }} without a cost
+          </span>
+        }
+      </div>
+    </section>
+
+    @if (r.batches.length === 0) {
+      <p class="notice good">Nothing expires in the next {{ r.withinDays }} days.</p>
+    }
+
+    @for (g of groups(); track g.window) {
+      <section [class]="'group ' + g.window.toLowerCase()">
+        <h2>{{ g.title }} <span class="count">{{ g.batches.length }}</span></h2>
+        <ul>
+          @for (b of g.batches; track b.batchId) {
+            <li>
+              <div class="name">
+                {{ b.itemName }}
+                @if (b.status === 'MARKED_DOWN') {
+                  <span class="tag">marked down</span>
+                }
+              </div>
+              <div class="meta">
+                <span>{{ b.daysUntilExpiry | expiryLabel }} ({{ b.expiresOn }})</span>
+                <span>{{ b.quantityRemaining }} left</span>
+                <span>{{ b.valueAtRiskCents | cents }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+}
