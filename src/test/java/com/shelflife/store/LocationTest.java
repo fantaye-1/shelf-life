@@ -37,4 +37,23 @@ class LocationTest {
         assertThatThrownBy(() -> new Location(merchantId, " ", "America/Chicago"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void digestEmailIsOptionalTrimmedAndShapeChecked() {
+        Location location = new Location(merchantId, "Dayton", "America/New_York");
+        assertThat(location.getDigestEmail()).isNull();
+
+        location.changeDigestEmail("  owner@zmarket23.example ");
+        assertThat(location.getDigestEmail()).isEqualTo("owner@zmarket23.example");
+
+        location.changeDigestEmail("   ");
+        assertThat(location.getDigestEmail()).isNull();
+
+        for (String bad : new String[] {"owner", "owner@", "@zmarket23.example", "owner@localhost",
+                "two words@zmarket23.example", "a@b@zmarket23.example", "x".repeat(250) + "@a.example"}) {
+            assertThatThrownBy(() -> location.changeDigestEmail(bad))
+                    .as(bad)
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
 }

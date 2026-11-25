@@ -18,7 +18,9 @@ public class LocationService {
     }
 
     public Location create(UUID merchantId, LocationRequest request) {
-        return locations.save(new Location(merchantId, request.name(), request.timezone()));
+        Location location = new Location(merchantId, request.name(), request.timezone());
+        location.changeDigestEmail(request.digestEmail());
+        return locations.save(location);
     }
 
     @Transactional(readOnly = true)
@@ -32,11 +34,15 @@ public class LocationService {
         return locations.findAllByMerchantIdOrderByNameAsc(merchantId);
     }
 
-    /** Renames the location and changes its time zone. The Square link is kept; only Square sync sets it. */
+    /**
+     * Renames the location and changes its time zone and digest recipient. The Square link is kept;
+     * only Square sync sets it.
+     */
     public Location replace(UUID merchantId, UUID locationId, LocationRequest request) {
         Location location = get(merchantId, locationId);
         location.rename(request.name());
         location.changeTimezone(request.timezone());
+        location.changeDigestEmail(request.digestEmail());
         return location;
     }
 }

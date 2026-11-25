@@ -25,3 +25,15 @@ management:
     health:
       # Don't reveal component details to anonymous callers.
       show-details: never
+
+shelflife:
+  mail:
+    # "log" writes emails to the log instead of sending them (development). A real provider comes before launch.
+    provider: ${MAIL_PROVIDER:log}
+  digest:
+    # Each store gets its digest once its own local clock reaches this hour (0-23).
+    send-hour: ${DIGEST_SEND_HOUR:7}
+    # How many days ahead the digest looks; expired batches still on the shelf are always listed.
+    within-days: 7
+    # When the job checks for due stores (UTC, Spring cron with seconds): a few minutes past every hour.
+    cron: "0 5 * * * *"
