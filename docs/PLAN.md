@@ -153,7 +153,7 @@ Rules:
 - [ ] **M2: REST API.** CRUD for items, batches and waste, with validation, tenant scoping and error handling; integration tests.
   - [x] Slice 1: items API (`/api/items`: create, list, find by barcode, get, replace), bean validation, problem+json errors, caller's merchant from a temporary `X-Merchant-Id` header (replaced by login in M8), tenant-isolation tests.
   - [x] Slice 2: locations API (`/api/locations`: create, list, get, replace), IANA time-zone validation, Square link kept on edits, tenant-isolation tests.
-  - [ ] Slice 3: batches API (log a batch, mark down, sell, list per location).
+  - [x] Slice 3: batches API (`/api/batches`: log a batch, list per location by status, record sales, mark down, sold out, fix the expiry date), expiry judged by the store's own day via one app `Clock`, tenant-isolation tests.
   - [ ] Slice 4: waste API (record waste with dollar loss).
 - [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
 - [ ] **M4: Web app.** Angular screens for batch entry (phone-friendly), the expiring list, actions, and the waste report.

@@ -42,6 +42,13 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `GET` | `/api/locations/{id}` | One location |
 | `POST` | `/api/locations` | Create: `{"name": "...", "timezone": "America/New_York"}` |
 | `PUT` | `/api/locations/{id}` | Replace name and time zone |
+| `GET` | `/api/batches?locationId=<id>` | Open batches at a store, soonest expiry first; repeat `&status=SOLD_OUT` etc. to filter |
+| `GET` | `/api/batches/{id}` | One batch, with `daysUntilExpiry` judged by the store's own day |
+| `POST` | `/api/batches` | Log: `{"itemId": "...", "locationId": "...", "expiresOn": "2026-12-01", "quantity": 12, "unitCostCents": 289}` |
+| `POST` | `/api/batches/{id}/sales` | Units sold: `{"quantity": 4}`; selling the last unit closes it as sold out |
+| `POST` | `/api/batches/{id}/mark-down` | Marked down for a quick sale |
+| `POST` | `/api/batches/{id}/sold-out` | Shelf found empty: the rest counts as sold |
+| `PUT` | `/api/batches/{id}/expires-on` | Fix a mistyped date: `{"expiresOn": "2026-12-01"}` |
 
 ## Planned stack
 
