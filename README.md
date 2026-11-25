@@ -38,6 +38,10 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `GET` | `/api/items/{id}` | One item |
 | `POST` | `/api/items` | Create: `{"name": "...", "sku": "...", "gtin": "..."}` |
 | `PUT` | `/api/items/{id}` | Replace name, SKU and barcode (blank clears) |
+| `GET` | `/api/locations` | All store locations by name |
+| `GET` | `/api/locations/{id}` | One location |
+| `POST` | `/api/locations` | Create: `{"name": "...", "timezone": "America/New_York"}` |
+| `PUT` | `/api/locations/{id}` | Replace name and time zone |
 
 ## Planned stack
 
