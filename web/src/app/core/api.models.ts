@@ -38,3 +38,41 @@ export interface ExpiringReport {
   batchesWithUnknownCost: number;
   batches: ExpiringBatch[];
 }
+
+export interface Item {
+  id: string;
+  name: string;
+  sku: string | null;
+  gtin: string | null;
+  squareVariationId: string | null;
+  createdAt: string;
+}
+
+export interface NewItem {
+  name: string;
+  sku: string | null;
+  gtin: string | null;
+}
+
+/** Body for logging a batch. `expiresOn` is the date printed on the package, yyyy-MM-dd. */
+export interface NewBatch {
+  itemId: string;
+  locationId: string;
+  expiresOn: string;
+  quantity: number;
+  unitCostCents: number | null;
+}
+
+export interface Batch {
+  id: string;
+  itemId: string;
+  locationId: string;
+  expiresOn: string;
+  daysUntilExpiry: number;
+  expired: boolean;
+  quantityReceived: number;
+  quantityRemaining: number;
+  unitCostCents: number | null;
+  status: BatchStatus;
+  createdAt: string;
+}

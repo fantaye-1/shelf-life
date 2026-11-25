@@ -40,7 +40,7 @@ npm test         # unit tests in Chrome (CI runs them headless)
 npm run build    # production build in web/dist/
 ```
 
-Open **Settings** and paste your store's merchant id once; the browser keeps it and sends it as `X-Merchant-Id` until sign-in arrives (M8). The first screen is **Expiring soon**.
+Open **Settings** and paste your store's merchant id once; the browser keeps it and sends it as `X-Merchant-Id` until sign-in arrives (M8). The first screen is **Expiring soon**; **Log batch** records a delivery (scan or search the item, then expiry date, quantity and an optional unit cost).
 
 ### API (early)
 

@@ -1,0 +1,105 @@
+<h1>Log a batch</h1>
+
+@if (!merchant.merchantId()) {
+  <p class="notice">
+    This browser doesn't know which store it works for yet.
+    Add your store id on the <a routerLink="/settings">Settings</a> screen.
+  </p>
+} @else {
+  @if (lastLogged(); as l) {
+    <p class="notice good" role="status">
+      Logged {{ l.quantity }} × {{ l.itemName }}, expires {{ l.expiresOn }}
+      @if (l.unitCostCents !== null) { at {{ l.unitCostCents | cents }} each}.
+    </p>
+  }
+
+  @if (loaded() && locations().length === 0) {
+    <p class="notice">No store locations yet. Add one through the API (screens for this come later).</p>
+  }
+
+  <form (submit)="submit(); $event.preventDefault()" novalidate>
+    @if (locations().length > 1) {
+      <label>
+        Store
+        <select #loc name="location" (change)="selectLocation(loc.value)">
+          @for (l of locations(); track l.id) {
+            <option [value]="l.id" [selected]="l.id === locationId()">{{ l.name }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <fieldset>
+      <legend>Item</legend>
+      @if (selectedItem(); as item) {
+        <div class="picked">
+          <div>
+            <div class="name">{{ item.name }}</div>
+            @if (item.sku || item.gtin) {
+              <div class="muted">{{ item.sku }} {{ item.gtin }}</div>
+            }
+          </div>
+          <button type="button" class="secondary" (click)="changeItem()">Change</button>
+        </div>
+      } @else {
+        <input #searchInput name="search" type="search" [value]="query()" (input)="search(searchInput.value)"
+               placeholder="Name, SKU or scan a barcode" autocomplete="off" enterkeyhint="search"
+               aria-label="Search items">
+        @if (barcodeInvalid()) {
+          <p class="hint error">That barcode's check digit doesn't match. Scan or type it again.</p>
+        }
+        @if (results().length > 0) {
+          <ul class="results">
+            @for (r of results(); track r.id) {
+              <li><button type="button" class="result" (click)="choose(r)">
+                <span class="name">{{ r.name }}</span>
+                @if (r.sku) { <span class="muted">{{ r.sku }}</span> }
+              </button></li>
+            }
+          </ul>
+        } @else if (query().trim() && !barcodeInvalid() && (barcode() === null || barcodeMatches() !== null)) {
+          <div class="add">
+            <p class="hint">No item matches “{{ query().trim() }}”.</p>
+            <label>
+              New item name
+              <input #newName name="newItemName" [value]="barcode() === null ? query().trim() : ''"
+                     autocomplete="off">
+            </label>
+            <button type="button" class="secondary" [disabled]="saving()" (click)="addItem(newName.value)">
+              Add item{{ barcode() !== null ? ' with this barcode' : '' }}
+            </button>
+          </div>
+        }
+      }
+    </fieldset>
+
+    <label>
+      Expiry date
+      <input #exp name="expiresOn" type="date" required [value]="expiresOn()" (input)="expiresOn.set(exp.value)">
+    </label>
+    @if (alreadyExpired()) {
+      <p class="hint warn">This date has already passed at {{ location()?.name }}. You can still log it.</p>
+    }
+
+    <div class="row">
+      <label>
+        Quantity
+        <input #qty name="quantity" type="text" inputmode="numeric" required [value]="quantity()"
+               (input)="quantity.set(qty.value)" autocomplete="off">
+      </label>
+      <label>
+        Unit cost ($, optional)
+        <input #cost name="unitCost" type="text" inputmode="decimal" [value]="unitCost()"
+               (input)="unitCost.set(cost.value)" placeholder="2.49" autocomplete="off">
+      </label>
+    </div>
+
+    @if (errors().length > 0) {
+      <ul class="error" role="alert">
+        @for (e of errors(); track e) { <li>{{ e }}</li> }
+      </ul>
+    }
+
+    <button type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Log batch' }}</button>
+  </form>
+}
