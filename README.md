@@ -40,8 +40,8 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `PUT` | `/api/items/{id}` | Replace name, SKU and barcode (blank clears) |
 | `GET` | `/api/locations` | All store locations by name |
 | `GET` | `/api/locations/{id}` | One location |
-| `POST` | `/api/locations` | Create: `{"name": "...", "timezone": "America/New_York"}` |
-| `PUT` | `/api/locations/{id}` | Replace name and time zone |
+| `POST` | `/api/locations` | Create: `{"name": "...", "timezone": "America/New_York", "digestEmail": "owner@example.com"}` (`digestEmail` optional) |
+| `PUT` | `/api/locations/{id}` | Replace name, time zone and digest recipient (leaving `digestEmail` out turns the digest off) |
 | `GET` | `/api/batches?locationId=<id>` | Open batches at a store, soonest expiry first; repeat `&status=SOLD_OUT` etc. to filter |
 | `GET` | `/api/batches/{id}` | One batch, with `daysUntilExpiry` judged by the store's own day |
 | `POST` | `/api/batches` | Log: `{"itemId": "...", "locationId": "...", "expiresOn": "2026-12-01", "quantity": 12, "unitCostCents": 289}` |
@@ -53,6 +53,10 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `GET` | `/api/batches/{id}/waste` | Waste records of one batch |
 | `GET` | `/api/waste?from=<instant>&to=<instant>` | Waste in a time window (`to` exclusive, e.g. `2026-11-01T04:00:00Z`), with `knownLossCents` and `entriesWithUnknownLoss` |
 | `GET` | `/api/expiring?locationId=<id>` | Open batches expired or expiring within `withinDays` (default 7, max 30) of the store's today, bucketed `EXPIRED`/`TODAY`/`NEXT_3_DAYS`/`NEXT_7_DAYS`/`LATER`, with counts and `knownValueAtRiskCents` |
+
+### Daily digest
+
+Each store with a `digestEmail` gets one plain-text email per day once its own local clock reaches `DIGEST_SEND_HOUR` (default 7 AM): expired batches still on the shelf, then today, the next 3 days and the next 7 days, with the dollar value at risk. Stores with nothing expiring get no email. The job checks a few minutes past every hour and catches up after downtime. With `MAIL_PROVIDER=log` (the default) the email is written to the log instead of sent; a real mail provider is added before launch.
 
 ## Planned stack
 

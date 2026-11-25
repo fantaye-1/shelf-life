@@ -155,9 +155,9 @@ Rules:
   - [x] Slice 2: locations API (`/api/locations`: create, list, get, replace), IANA time-zone validation, Square link kept on edits, tenant-isolation tests.
   - [x] Slice 3: batches API (`/api/batches`: log a batch, list per location by status, record sales, mark down, sold out, fix the expiry date), expiry judged by the store's own day via one app `Clock`, tenant-isolation tests.
   - [x] Slice 4: waste API (`POST /api/batches/{id}/waste` records thrown-away units with the dollar loss and closes an emptied batch as wasted; `GET /api/batches/{id}/waste`; `GET /api/waste?from&to` lists a time window with the known dollar total and a count of entries with unknown cost), tenant-isolation tests.
-- [ ] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
+- [x] **M3: Expiring soon and digest.** Time-zone-aware queries (today, 3 days, 7 days); daily digest job; pluggable email sender (logs in dev).
   - [x] Slice 1: expiring-soon list (`GET /api/expiring?locationId&withinDays`, default 7, max 30): open batches bucketed as expired / today / next 3 days / next 7 days by the store's own day, item names, per-window counts, dollar value at risk (with a count of batches with unknown cost), tenant-isolation tests.
-  - [ ] Slice 2: daily digest job and pluggable email sender (logs in dev).
+  - [x] Slice 2: daily digest job and pluggable email sender (logs in dev). Each store sets a `digestEmail` (V3); an hourly job sends one plain-text digest per store-local day once the store's clock reaches the send hour (default 7 AM), skips stores with nothing expiring, claims the day with one atomic update (no double sends across instances) and releases it if sending fails so the next run retries. `EmailSender` interface with a logging sender for dev; the real provider is picked at M10.
 - [ ] **M4: Web app.** Angular screens for batch entry (phone-friendly), the expiring list, actions, and the waste report.
 - [ ] **M5: Local run.** Dockerfiles and docker-compose (api + db + web); one command to start everything.
 - [ ] **M6: Square connect.** OAuth flow, encrypted tokens, catalog import, catalog webhooks, all against the **sandbox**, with a mocked client in tests.

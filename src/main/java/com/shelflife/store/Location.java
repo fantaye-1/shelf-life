@@ -11,11 +11,14 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /** One physical store. Expiry dates are judged against this location's own calendar day. */
 @Entity
 @Table(name = "location")
 public class Location extends BaseEntity {
+
+    private static final Pattern EMAIL = Pattern.compile("^[^@\\s]{1,64}@[^@\\s]+\\.[^@\\s]+$");
 
     @Column(name = "merchant_id", nullable = false, updatable = false)
     private UUID merchantId;
@@ -28,6 +31,13 @@ public class Location extends BaseEntity {
 
     @Column(nullable = false, length = 64)
     private String timezone;
+
+    @Column(name = "digest_email", length = 254)
+    private String digestEmail;
+
+    // Written only by the digest job's claim query, never through the entity.
+    @Column(name = "digest_sent_on", insertable = false, updatable = false)
+    private LocalDate digestSentOn;
 
     protected Location() {
     }
@@ -57,6 +67,18 @@ public class Location extends BaseEntity {
         this.timezone = zone.getId();
     }
 
+    /**
+     * Sets who gets this store's morning digest; null or blank turns the digest off. Only a light
+     * shape check: the address is proven when mail actually arrives.
+     */
+    public void changeDigestEmail(String email) {
+        String value = Text.blankToNull(email);
+        if (value != null && (value.length() > 254 || !EMAIL.matcher(value).matches())) {
+            throw new IllegalArgumentException("Not a valid email address: " + value);
+        }
+        this.digestEmail = value;
+    }
+
     public void linkSquare(String squareLocationId) {
         this.squareLocationId = Text.requireNonBlank(squareLocationId, "squareLocationId");
     }
@@ -84,5 +106,14 @@ public class Location extends BaseEntity {
 
     public String getTimezone() {
         return timezone;
+    }
+
+    public String getDigestEmail() {
+        return digestEmail;
+    }
+
+    /** The store-local date the digest last ran for this store, or null if it never has. */
+    public LocalDate getDigestSentOn() {
+        return digestSentOn;
     }
 }

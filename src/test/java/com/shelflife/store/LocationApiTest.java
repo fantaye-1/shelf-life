@@ -104,6 +104,36 @@ class LocationApiTest {
     }
 
     @Test
+    void setsChangesAndClearsTheDigestRecipient() throws Exception {
+        String id = createLocation(zmarket, """
+                {"name": "Dayton", "timezone": "America/New_York", "digestEmail": "owner@zmarket23.example"}""");
+        mvc.perform(get("/api/locations/" + id).header(HEADER, zmarket.toString()))
+                .andExpect(jsonPath("$.digestEmail").value("owner@zmarket23.example"));
+
+        mvc.perform(json(put("/api/locations/" + id), zmarket, """
+                        {"name": "Dayton", "timezone": "America/New_York", "digestEmail": "manager@zmarket23.example"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.digestEmail").value("manager@zmarket23.example"));
+
+        // PUT replaces the whole location, so leaving the address out turns the digest off.
+        mvc.perform(json(put("/api/locations/" + id), zmarket, """
+                        {"name": "Dayton", "timezone": "America/New_York"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.digestEmail").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    void rejectsABadDigestEmailAsProblemJson() throws Exception {
+        mvc.perform(json(post("/api/locations"), zmarket, """
+                        {"name": "Dayton", "timezone": "America/New_York", "digestEmail": "not-an-email"}"""))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        mvc.perform(json(post("/api/locations"), zmarket, """
+                        {"name": "Dayton", "timezone": "America/New_York", "digestEmail": "owner@localhost"}"""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void oneMerchantCannotSeeOrChangeAnothersLocation() throws Exception {
         String id = createLocation(zmarket, """
                 {"name": "Dayton", "timezone": "America/New_York"}""");

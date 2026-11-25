@@ -8,10 +8,11 @@ public record LocationResponse(
         String name,
         String timezone,
         String squareLocationId,
+        String digestEmail,
         Instant createdAt) {
 
     static LocationResponse of(Location location) {
         return new LocationResponse(location.getId(), location.getName(), location.getTimezone(),
-                location.getSquareLocationId(), location.getCreatedAt());
+                location.getSquareLocationId(), location.getDigestEmail(), location.getCreatedAt());
     }
 }
