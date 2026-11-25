@@ -78,17 +78,18 @@ mkdir -p "$MAVEN_HOME"
 tmpDir=$(mktemp -d "$MAVEN_HOME/tmp.XXXXXX")
 trap 'rm -rf "$tmpDir"' EXIT INT TERM
 
+# Retry briefly: Maven Central sometimes answers 429 (rate limited) or 5xx for a few seconds.
 if command -v curl >/dev/null 2>&1; then
   if [ -n "${MVNW_USERNAME-}" ]; then
-    curl -fsSL -u "$MVNW_USERNAME:${MVNW_PASSWORD-}" -o "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    curl -fsSL --retry 4 --retry-delay 5 -u "$MVNW_USERNAME:${MVNW_PASSWORD-}" -o "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
   else
-    curl -fsSL -o "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    curl -fsSL --retry 4 --retry-delay 5 -o "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
   fi
 elif command -v wget >/dev/null 2>&1; then
   if [ -n "${MVNW_USERNAME-}" ]; then
-    wget -q --user="$MVNW_USERNAME" --password="${MVNW_PASSWORD-}" -O "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    wget -q --tries=5 --waitretry=5 --retry-on-http-error=429,500,502,503,504 --user="$MVNW_USERNAME" --password="${MVNW_PASSWORD-}" -O "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
   else
-    wget -q -O "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
+    wget -q --tries=5 --waitretry=5 --retry-on-http-error=429,500,502,503,504 -O "$tmpDir/$distributionFile" "$distributionUrl" || die "download failed: $distributionUrl"
   fi
 else
   die "curl or wget is required to download Maven"
