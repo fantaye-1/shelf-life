@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Observable, map } from 'rxjs';
 import { ExpiringBatch, ExpiringReport, ExpiryWindow, StoreLocation } from '../core/api.models';
+import { BatchAction, actionDoneMessage, parseActionQuantity } from '../core/batch-actions';
 import { CentsPipe, ExpiryLabelPipe } from '../core/format';
 import { MerchantStore } from '../core/merchant.store';
 import { ShelfApi, errorMessage } from '../core/shelf-api.service';
@@ -41,6 +43,14 @@ export class ExpiringComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly locationsLoaded = signal(false);
 
+  /** The batch whose action panel is open (one at a time), and that panel's state. */
+  readonly openBatchId = signal<string | null>(null);
+  readonly actionQuantity = signal('');
+  readonly actionBusy = signal(false);
+  readonly actionError = signal<string | null>(null);
+  /** Confirmation of the last recorded action, shown above the list. */
+  readonly done = signal<string | null>(null);
+
   readonly groups = computed<WindowGroup[]>(() => {
     const report = this.report();
     if (!report) {
@@ -74,6 +84,8 @@ export class ExpiringComponent implements OnInit {
 
   selectLocation(id: string): void {
     this.locationId.set(id);
+    this.closeActions();
+    this.done.set(null);
     this.load();
   }
 
@@ -109,5 +121,65 @@ export class ExpiringComponent implements OnInit {
         }
       },
     });
+  }
+
+  /** Opens the action panel for a batch, with "how many" preset to everything left. */
+  toggleActions(batch: ExpiringBatch): void {
+    if (this.openBatchId() === batch.batchId) {
+      this.closeActions();
+      return;
+    }
+    this.openBatchId.set(batch.batchId);
+    this.actionQuantity.set(String(batch.quantityRemaining));
+    this.actionError.set(null);
+  }
+
+  closeActions(): void {
+    this.openBatchId.set(null);
+    this.actionError.set(null);
+  }
+
+  /** Records an action, then reloads the list so totals and groups match the server. */
+  act(batch: ExpiringBatch, action: BatchAction): void {
+    if (this.actionBusy()) {
+      return;
+    }
+    let quantity = 0;
+    if (action === 'sold' || action === 'wasted') {
+      const parsed = parseActionQuantity(this.actionQuantity(), batch.quantityRemaining);
+      if (!parsed.ok) {
+        this.actionError.set(parsed.error);
+        return;
+      }
+      quantity = parsed.quantity;
+    }
+    this.actionBusy.set(true);
+    this.actionError.set(null);
+    this.request(batch.batchId, action, quantity).subscribe({
+      next: (lossCents) => {
+        this.actionBusy.set(false);
+        this.done.set(actionDoneMessage(action, batch.itemName, quantity, lossCents));
+        this.closeActions();
+        this.load();
+      },
+      error: (err) => {
+        this.actionBusy.set(false);
+        this.actionError.set(errorMessage(err));
+      },
+    });
+  }
+
+  /** Calls the API for one action; emits the dollar loss for waste, null otherwise. */
+  private request(batchId: string, action: BatchAction, quantity: number): Observable<number | null> {
+    switch (action) {
+      case 'sold':
+        return this.api.recordSale(batchId, quantity).pipe(map(() => null));
+      case 'wasted':
+        return this.api.recordWaste(batchId, quantity).pipe(map((r) => r.waste.lossCents));
+      case 'markDown':
+        return this.api.markDown(batchId).pipe(map(() => null));
+      case 'soldOut':
+        return this.api.markSoldOut(batchId).pipe(map(() => null));
+    }
   }
 }
