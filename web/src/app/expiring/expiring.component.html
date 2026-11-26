@@ -31,6 +31,10 @@
     <p class="error" role="alert">{{ error() }}</p>
   }
 
+  @if (done()) {
+    <p class="notice good" role="status">{{ done() }}</p>
+  }
+
   @if (locationsLoaded() && locations().length === 0) {
     <p class="notice">No store locations yet. Add one through the API (screens for this come later).</p>
   }
@@ -77,6 +81,39 @@
                 <span>{{ b.quantityRemaining }} left</span>
                 <span>{{ b.valueAtRiskCents | cents }}</span>
               </div>
+              <button type="button" class="secondary toggle" (click)="toggleActions(b)"
+                      [attr.aria-expanded]="openBatchId() === b.batchId"
+                      [attr.aria-controls]="'actions-' + b.batchId">
+                {{ openBatchId() === b.batchId ? 'Close' : 'Update' }}
+              </button>
+              @if (openBatchId() === b.batchId) {
+                <div class="actions" [id]="'actions-' + b.batchId">
+                  <label>
+                    How many
+                    <input #qty type="text" inputmode="numeric" autocomplete="off" name="quantity"
+                           [value]="actionQuantity()" (input)="actionQuantity.set(qty.value)">
+                  </label>
+                  <div class="buttons">
+                    <button type="button" [disabled]="actionBusy()" (click)="act(b, 'sold')">Sold</button>
+                    <button type="button" class="danger" [disabled]="actionBusy()" (click)="act(b, 'wasted')">
+                      Thrown away
+                    </button>
+                  </div>
+                  <div class="buttons">
+                    @if (b.status !== 'MARKED_DOWN') {
+                      <button type="button" class="secondary" [disabled]="actionBusy()" (click)="act(b, 'markDown')">
+                        Marked down
+                      </button>
+                    }
+                    <button type="button" class="secondary" [disabled]="actionBusy()" (click)="act(b, 'soldOut')">
+                      Shelf empty: sold out
+                    </button>
+                  </div>
+                  @if (actionError()) {
+                    <p class="error" role="alert">{{ actionError() }}</p>
+                  }
+                </div>
+              }
             </li>
           }
         </ul>

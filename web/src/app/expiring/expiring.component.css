@@ -13,3 +13,13 @@ li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; marg
 .name { font-weight: 600; }
 .meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
 .tag { font-weight: 400; font-size: 0.75rem; background: var(--chip); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+li { position: relative; }
+.toggle { position: absolute; top: 8px; right: 8px; min-height: 36px; padding: 4px 12px; }
+.name { padding-right: 88px; }
+.actions { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.actions label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; max-width: 10rem; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.buttons button { flex: 1 1 8rem; }
+button.danger { background: var(--danger); color: var(--card); }
+button:disabled { opacity: 0.6; cursor: default; }
+.actions .error { margin: 0; }

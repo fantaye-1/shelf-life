@@ -76,3 +76,18 @@ export interface Batch {
   status: BatchStatus;
   createdAt: string;
 }
+
+/** One waste record. `lossCents` is null when the batch had no unit cost (unknown, not zero). */
+export interface WasteRecord {
+  id: string;
+  batchId: string;
+  quantity: number;
+  lossCents: number | null;
+  recordedAt: string;
+}
+
+/** Answer to throwing units away: the new waste record and the batch as it is now. */
+export interface WasteRecorded {
+  waste: WasteRecord;
+  batch: Batch;
+}

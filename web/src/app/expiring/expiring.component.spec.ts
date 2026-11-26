@@ -146,4 +146,124 @@ describe('ExpiringComponent', () => {
     fixture.detectChanges();
     expect(text(fixture)).toContain('No store locations yet');
   });
+
+  describe('actions on a batch', () => {
+    function loaded(): ComponentFixture<ExpiringComponent> {
+      const fixture = start();
+      backend.expectOne('/api/locations').flush([DAYTON]);
+      expectReport(DAYTON.id, '7').flush(report());
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function el(fixture: ComponentFixture<ExpiringComponent>): HTMLElement {
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    function button(fixture: ComponentFixture<ExpiringComponent>, label: string): HTMLButtonElement {
+      const found = Array.from(el(fixture).querySelectorAll('button')).find((b) => b.textContent?.trim() === label);
+      if (!found) {
+        throw new Error(`No button "${label}"`);
+      }
+      return found;
+    }
+
+    function openFirst(fixture: ComponentFixture<ExpiringComponent>): HTMLInputElement {
+      button(fixture, 'Update').click();
+      fixture.detectChanges();
+      return el(fixture).querySelector('.actions input') as HTMLInputElement;
+    }
+
+    function typeQuantity(fixture: ComponentFixture<ExpiringComponent>, input: HTMLInputElement, value: string): void {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+    }
+
+    it('opens one panel with "how many" preset to what is left', () => {
+      const fixture = loaded();
+      const input = openFirst(fixture);
+      expect(input.value).toBe('3');
+      expect(el(fixture).querySelectorAll('.actions').length).toBe(1);
+      expect(button(fixture, 'Close').getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('records units thrown away, shows the dollar loss and reloads the list', () => {
+      const fixture = loaded();
+      typeQuantity(fixture, openFirst(fixture), '2');
+      button(fixture, 'Thrown away').click();
+
+      const req = backend.expectOne('/api/batches/c1/waste');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ quantity: 2 });
+      expect(req.request.headers.get('X-Merchant-Id')).toBe(MERCHANT);
+      req.flush({ waste: { id: 'w1', batchId: 'c1', quantity: 2, lossCents: 822, recordedAt: '2026-11-25T20:00:00Z' } });
+
+      expectReport(DAYTON.id, '7').flush(report());
+      fixture.detectChanges();
+      expect(text(fixture)).toContain('Recorded 2 × Whole milk 1 gal thrown away: $8.22 lost.');
+      expect(el(fixture).querySelector('.actions')).toBeNull();
+    });
+
+    it('records a sale', () => {
+      const fixture = loaded();
+      typeQuantity(fixture, openFirst(fixture), '1');
+      button(fixture, 'Sold').click();
+      const req = backend.expectOne('/api/batches/c1/sales');
+      expect(req.request.body).toEqual({ quantity: 1 });
+      req.flush({});
+      expectReport(DAYTON.id, '7').flush(report());
+      fixture.detectChanges();
+      expect(text(fixture)).toContain('Recorded 1 × Whole milk 1 gal sold.');
+    });
+
+    it('marks down and sells out without a quantity', () => {
+      const fixture = loaded();
+      openFirst(fixture);
+      button(fixture, 'Marked down').click();
+      const markDown = backend.expectOne('/api/batches/c1/mark-down');
+      expect(markDown.request.method).toBe('POST');
+      markDown.flush({});
+      expectReport(DAYTON.id, '7').flush(report());
+      fixture.detectChanges();
+
+      openFirst(fixture);
+      button(fixture, 'Shelf empty: sold out').click();
+      backend.expectOne('/api/batches/c1/sold-out').flush({});
+      expectReport(DAYTON.id, '7').flush(report());
+      fixture.detectChanges();
+      expect(text(fixture)).toContain('Whole milk 1 gal is sold out.');
+    });
+
+    it('hides "Marked down" on a batch that already is', () => {
+      const fixture = loaded();
+      const updates = Array.from(el(fixture).querySelectorAll('button')).filter((b) => b.textContent?.trim() === 'Update');
+      updates[1].click();
+      fixture.detectChanges();
+      expect(() => button(fixture, 'Marked down')).toThrow();
+      expect(button(fixture, 'Shelf empty: sold out')).toBeTruthy();
+    });
+
+    it('catches a bad quantity before calling the API', () => {
+      const fixture = loaded();
+      typeQuantity(fixture, openFirst(fixture), '4');
+      button(fixture, 'Sold').click();
+      fixture.detectChanges();
+      expect(text(fixture)).toContain('Only 3 left in this batch.');
+      backend.expectNone('/api/batches/c1/sales');
+    });
+
+    it('keeps the panel open with the server error', () => {
+      const fixture = loaded();
+      openFirst(fixture);
+      button(fixture, 'Thrown away').click();
+      backend.expectOne('/api/batches/c1/waste').flush(
+        { title: 'Conflict', detail: 'Batch is SOLD_OUT and can no longer change' },
+        { status: 409, statusText: 'Conflict' },
+      );
+      fixture.detectChanges();
+      expect(el(fixture).querySelector('.actions')?.textContent).toContain('can no longer change');
+      expect(fixture.componentInstance.actionBusy()).toBeFalse();
+    });
+  });
 });
