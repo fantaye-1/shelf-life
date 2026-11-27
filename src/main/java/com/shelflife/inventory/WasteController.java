@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Waste across all batches in a time window, e.g. one month, with the dollar total. Recording waste
+ * Waste across all batches in a time window, e.g. one month, with the dollar total, and the
+ * per-store waste report. Recording waste
  * happens on a batch: {@code POST /api/batches/{id}/waste}.
  */
 @RestController
@@ -27,5 +28,12 @@ public class WasteController {
     public WasteListResponse list(@CurrentMerchant UUID merchantId, @RequestParam Instant from,
             @RequestParam Instant to) {
         return service.listBetween(merchantId, from, to);
+    }
+
+    /** Dollars lost per month at one store and its most wasted items; {@code months} counts this month. */
+    @GetMapping("/report")
+    public WasteReport report(@CurrentMerchant UUID merchantId, @RequestParam UUID locationId,
+            @RequestParam(defaultValue = "" + WasteService.DEFAULT_REPORT_MONTHS) int months) {
+        return service.report(merchantId, locationId, months);
     }
 }

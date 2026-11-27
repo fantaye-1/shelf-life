@@ -66,6 +66,7 @@ Until app login lands (milestone M8), each request names its store with an `X-Me
 | `POST` | `/api/batches/{id}/waste` | Units thrown away: `{"quantity": 2}`; records the loss in cents (null if the batch has no unit cost); wasting the last unit closes it as wasted |
 | `GET` | `/api/batches/{id}/waste` | Waste records of one batch |
 | `GET` | `/api/waste?from=<instant>&to=<instant>` | Waste in a time window (`to` exclusive, e.g. `2026-11-01T04:00:00Z`), with `knownLossCents` and `entriesWithUnknownLoss` |
+| `GET` | `/api/waste/report?locationId=<id>&months=6` | Waste report for one store: units and dollars lost per calendar month in the store's time zone (`months` 1–24 including this month, default 6, every month listed even with no waste), totals, and the top 5 wasted items by known dollar loss |
 | `GET` | `/api/expiring?locationId=<id>` | Open batches expired or expiring within `withinDays` (default 7, max 30) of the store's today, bucketed `EXPIRED`/`TODAY`/`NEXT_3_DAYS`/`NEXT_7_DAYS`/`LATER`, with counts and `knownValueAtRiskCents` |
 
 ### Daily digest

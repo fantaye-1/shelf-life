@@ -1,12 +1,20 @@
 package com.shelflife.inventory;
 
+import com.shelflife.catalog.Item;
+import com.shelflife.catalog.ItemRepository;
 import com.shelflife.store.Location;
 import com.shelflife.store.LocationRepository;
 import com.shelflife.web.NotFoundException;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,16 +26,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class WasteService {
 
+    public static final int DEFAULT_REPORT_MONTHS = 6;
+    public static final int MAX_REPORT_MONTHS = 24;
+    public static final int TOP_ITEMS = 5;
+
     private final BatchRepository batches;
     private final WasteEntryRepository waste;
     private final LocationRepository locations;
+    private final ItemRepository items;
     private final Clock clock;
 
     public WasteService(BatchRepository batches, WasteEntryRepository waste, LocationRepository locations,
-            Clock clock) {
+            ItemRepository items, Clock clock) {
         this.batches = batches;
         this.waste = waste;
         this.locations = locations;
+        this.items = items;
         this.clock = clock;
     }
 
@@ -68,6 +82,35 @@ public class WasteService {
         }
         return new WasteListResponse(from, to, knownLoss, unknown,
                 entries.stream().map(WasteResponse::of).toList());
+    }
+
+    /**
+     * The waste report for one store: dollars lost per calendar month for the last {@code months}
+     * months (this month included), judged by the store's own time zone, and the most wasted items.
+     */
+    @Transactional(readOnly = true)
+    public WasteReport report(UUID merchantId, UUID locationId, int months) {
+        if (months < 1 || months > MAX_REPORT_MONTHS) {
+            throw new IllegalArgumentException("months must be between 1 and " + MAX_REPORT_MONTHS);
+        }
+        Location location = locations.findByMerchantIdAndId(merchantId, locationId)
+                .orElseThrow(() -> new NotFoundException("Location", locationId));
+        ZoneId zone = location.zone();
+        YearMonth lastMonth = YearMonth.from(location.today(clock));
+        YearMonth firstMonth = lastMonth.minusMonths(months - 1L);
+
+        List<WastedUnits> entries = waste.findWastedUnitsAtLocation(merchantId, locationId,
+                WasteReportCalculator.startOf(firstMonth, zone),
+                WasteReportCalculator.startOf(lastMonth.plusMonths(1), zone));
+
+        Set<UUID> itemIds = entries.stream().map(WastedUnits::itemId).collect(Collectors.toSet());
+        Map<UUID, Item> itemsById = itemIds.isEmpty()
+                ? Map.of()
+                : items.findAllByMerchantIdAndIdIn(merchantId, itemIds).stream()
+                        .collect(Collectors.toMap(Item::getId, Function.identity()));
+
+        return WasteReportCalculator.build(location.getId(), location.getName(), zone, firstMonth, lastMonth,
+                entries, itemsById, TOP_ITEMS);
     }
 
     private Batch batch(UUID merchantId, UUID batchId) {
