@@ -91,3 +91,35 @@ export interface WasteRecorded {
   waste: WasteRecord;
   batch: Batch;
 }
+
+/** Waste in one calendar month at the store. `month` is yyyy-MM in the store's own time zone. */
+export interface WasteMonth {
+  month: string;
+  unitsWasted: number;
+  knownLossCents: number;
+  entriesWithUnknownLoss: number;
+}
+
+/** One item's waste over the report window. `itemName` is null only if the item is gone. */
+export interface WasteTopItem {
+  itemId: string;
+  itemName: string | null;
+  sku: string | null;
+  unitsWasted: number;
+  knownLossCents: number;
+  entriesWithUnknownLoss: number;
+}
+
+/** Waste at one store over the last few months. Entries without a cost are counted, never priced as $0. */
+export interface WasteReport {
+  locationId: string;
+  locationName: string;
+  firstMonth: string;
+  lastMonth: string;
+  /** Every month in the window, oldest first, including months with no waste. */
+  months: WasteMonth[];
+  unitsWasted: number;
+  knownLossCents: number;
+  entriesWithUnknownLoss: number;
+  topItems: WasteTopItem[];
+}

@@ -10,6 +10,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       <nav>
         <a routerLink="/expiring" routerLinkActive="active">Expiring</a>
         <a routerLink="/batches/new" routerLinkActive="active">Log batch</a>
+        <a routerLink="/waste" routerLinkActive="active">Waste</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
     </header>

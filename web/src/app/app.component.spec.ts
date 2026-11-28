@@ -15,6 +15,7 @@ describe('AppComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('Expiring');
     expect(text).toContain('Log batch');
+    expect(text).toContain('Waste');
     expect(text).toContain('Settings');
   });
 });

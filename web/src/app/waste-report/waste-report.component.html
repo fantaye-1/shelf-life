@@ -1,0 +1,107 @@
+<h1>Waste report</h1>
+
+@if (!merchant.merchantId()) {
+  <p class="notice">
+    This browser doesn't know which store it works for yet.
+    Add your store id on the <a routerLink="/settings">Settings</a> screen.
+  </p>
+} @else {
+  <div class="filters">
+    @if (locations().length > 1) {
+      <label>
+        Store
+        <select #loc (change)="selectLocation(loc.value)">
+          @for (l of locations(); track l.id) {
+            <option [value]="l.id" [selected]="l.id === locationId()">{{ l.name }}</option>
+          }
+        </select>
+      </label>
+    }
+    <label>
+      Period
+      <select #per (change)="setMonths(per.value)">
+        @for (m of monthOptions; track m) {
+          <option [value]="m" [selected]="m === months()">Last {{ m }} months</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  @if (locationsLoaded() && locations().length === 0) {
+    <p class="notice">No store locations yet. Add one through the API (screens for this come later).</p>
+  }
+
+  @if (loading() && !report()) {
+    <p>Loading…</p>
+  }
+
+  @if (report(); as r) {
+    <section class="summary" aria-label="Summary">
+      <div>
+        <span class="big">{{ shownLoss(r.knownLossCents, r.entriesWithUnknownLoss) | cents }}</span>
+        <span>thrown away at {{ r.locationName }}, {{ monthLabel(r.firstMonth) }} to {{ monthLabel(r.lastMonth) }}</span>
+        @if (unknownCostNote(r.entriesWithUnknownLoss); as note) {
+          <span class="muted">{{ note }}</span>
+        }
+      </div>
+      <div>
+        <span class="big">{{ r.unitsWasted }}</span>
+        <span>{{ r.unitsWasted === 1 ? 'unit' : 'units' }} wasted</span>
+      </div>
+    </section>
+
+    @if (empty()) {
+      <p class="notice good">Nothing was thrown away in this period.</p>
+    } @else {
+      <section aria-labelledby="by-month">
+        <h2 id="by-month">By month</h2>
+        <ul class="months">
+          @for (b of bars(); track b.month) {
+            <li>
+              <div class="row">
+                <span class="label">{{ b.label }}</span>
+                <span class="amount">{{ shownLoss(b.knownLossCents, b.entriesWithUnknownLoss) | cents }}</span>
+              </div>
+              <div class="bar" aria-hidden="true"><span [style.width.%]="b.percent"></span></div>
+              <div class="meta">
+                <span>{{ b.unitsWasted }} {{ b.unitsWasted === 1 ? 'unit' : 'units' }}</span>
+                @if (b.entriesWithUnknownLoss > 0) {
+                  <span>{{ b.entriesWithUnknownLoss }} without a cost</span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      @if (r.topItems.length > 0) {
+        <section aria-labelledby="top-items">
+          <h2 id="top-items">Most wasted items</h2>
+          <ol class="items">
+            @for (t of r.topItems; track t.itemId) {
+              <li>
+                <div class="row">
+                  <span class="label">{{ t.itemName ?? 'Removed item' }}</span>
+                  <span class="amount">{{ shownLoss(t.knownLossCents, t.entriesWithUnknownLoss) | cents }}</span>
+                </div>
+                <div class="meta">
+                  @if (t.sku) {
+                    <span>SKU {{ t.sku }}</span>
+                  }
+                  <span>{{ t.unitsWasted }} {{ t.unitsWasted === 1 ? 'unit' : 'units' }}</span>
+                  @if (t.entriesWithUnknownLoss > 0) {
+                    <span>{{ t.entriesWithUnknownLoss }} without a cost</span>
+                  }
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+      }
+    }
+  }
+}
