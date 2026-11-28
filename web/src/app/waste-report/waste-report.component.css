@@ -1,0 +1,15 @@
+.filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.summary { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 16px; }
+.summary div { display: flex; flex-direction: column; }
+.big { font-size: 1.6rem; font-weight: 600; }
+.muted { color: var(--muted); font-size: 0.85rem; }
+h2 { font-size: 1.05rem; margin: 20px 0 8px; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; background: var(--card); }
+.row { display: flex; justify-content: space-between; gap: 12px; }
+.label { font-weight: 600; overflow-wrap: anywhere; }
+.amount { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 4px; background: var(--chip); margin-top: 6px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--danger); border-radius: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 0.9rem; margin-top: 4px; }

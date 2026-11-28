@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Batch, ExpiringReport, Item, NewBatch, NewItem, StoreLocation, WasteRecorded } from './api.models';
+import { Batch, ExpiringReport, Item, NewBatch, NewItem, StoreLocation, WasteRecorded, WasteReport } from './api.models';
 
 /** Thin typed client for the ShelfLife REST API (same origin; `ng serve` proxies /api to :8080). */
 @Injectable({ providedIn: 'root' })
@@ -44,6 +44,12 @@ export class ShelfApi {
 
   markDown(batchId: string): Observable<Batch> {
     return this.http.post<Batch>(`/api/batches/${encodeURIComponent(batchId)}/mark-down`, null);
+  }
+
+  wasteReport(locationId: string, months: number): Observable<WasteReport> {
+    return this.http.get<WasteReport>('/api/waste/report', {
+      params: { locationId, months: String(months) },
+    });
   }
 
   markSoldOut(batchId: string): Observable<Batch> {
